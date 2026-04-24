@@ -1,15 +1,17 @@
+version: "3.9"
+
 services:
   db:
     image: postgres:18
     container_name: postgres__open-wearables
     environment:
-      POSTGRES_DB: open-wearables
-      POSTGRES_USER: open-wearables
-      POSTGRES_PASSWORD: open-wearables
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U open-wearables -d open-wearables"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,17 +21,95 @@ services:
 
   app:
     build:
-        context: ./backend
-        dockerfile: Dockerfile
+      context: ./backend
+      dockerfile: Dockerfile
     container_name: backend__open-wearables
     image: open-wearables-platform:latest
     pull_policy: never
     command: scripts/start/app.sh
-    env_file:
-      - ./backend/config/.env
     environment:
-      - DB_HOST=db
-      - REDIS_HOST=redis
+      ENVIRONMENT: ${ENVIRONMENT}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      SERVER_HOST: ${SERVER_HOST}
+
+      RESEND_API_KEY: ${RESEND_API_KEY}
+      EMAIL_FROM_ADDRESS: ${EMAIL_FROM_ADDRESS}
+      EMAIL_FROM_NAME: ${EMAIL_FROM_NAME}
+      FRONTEND_URL: ${FRONTEND_URL}
+
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DB: ${REDIS_DB}
+
+      SENTRY_ENABLED: ${SENTRY_ENABLED}
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENV: ${SENTRY_ENV}
+      SENTRY_SAMPLES_RATE: ${SENTRY_SAMPLES_RATE}
+      SENTRY_SERVER_NAME: ${SENTRY_SERVER_NAME}
+
+      SECRET_KEY: ${SECRET_KEY}
+
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+
+      OPEN_WEARABLES_API_KEY: ${OPEN_WEARABLES_API_KEY}
+      RAW_PAYLOAD_S3_BUCKET: ${RAW_PAYLOAD_S3_BUCKET}
+      RAW_PAYLOAD_S3_ENDPOINT_URL: ${RAW_PAYLOAD_S3_ENDPOINT_URL}
+      RAW_PAYLOAD_S3_PREFIX: ${RAW_PAYLOAD_S3_PREFIX}
+
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION}
+      AWS_SNS_TOPIC_ARN: ${AWS_SNS_TOPIC_ARN}
+
+      SYNC_INTERVAL_SECONDS: ${SYNC_INTERVAL_SECONDS}
+      SLEEP_SCORE_INTERVAL_SECONDS: ${SLEEP_SCORE_INTERVAL_SECONDS}
+      RESILIENCE_SCORE_INTERVAL_SECONDS: ${RESILIENCE_SCORE_INTERVAL_SECONDS}
+      HISTORICAL_SYNC_ON_CONNECT: ${HISTORICAL_SYNC_ON_CONNECT}
+
+      SVIX_SERVER_URL: ${SVIX_SERVER_URL}
+
+      API_BASE_URL: ${API_BASE_URL}
+
+      SUUNTO_CLIENT_ID: ${SUUNTO_CLIENT_ID}
+      SUUNTO_CLIENT_SECRET: ${SUUNTO_CLIENT_SECRET}
+      SUUNTO_SUBSCRIPTION_KEY: ${SUUNTO_SUBSCRIPTION_KEY}
+
+      POLAR_CLIENT_ID: ${POLAR_CLIENT_ID}
+      POLAR_CLIENT_SECRET: ${POLAR_CLIENT_SECRET}
+
+      GARMIN_CLIENT_ID: ${GARMIN_CLIENT_ID}
+      GARMIN_CLIENT_SECRET: ${GARMIN_CLIENT_SECRET}
+
+      WHOOP_CLIENT_ID: ${WHOOP_CLIENT_ID}
+      WHOOP_CLIENT_SECRET: ${WHOOP_CLIENT_SECRET}
+      WHOOP_DEFAULT_SCOPE: ${WHOOP_DEFAULT_SCOPE}
+
+      OURA_CLIENT_ID: ${OURA_CLIENT_ID}
+      OURA_CLIENT_SECRET: ${OURA_CLIENT_SECRET}
+      OURA_DEFAULT_SCOPE: ${OURA_DEFAULT_SCOPE}
+      OURA_WEBHOOK_VERIFICATION_TOKEN: ${OURA_WEBHOOK_VERIFICATION_TOKEN}
+
+      STRAVA_CLIENT_ID: ${STRAVA_CLIENT_ID}
+      STRAVA_CLIENT_SECRET: ${STRAVA_CLIENT_SECRET}
+      STRAVA_DEFAULT_SCOPE: ${STRAVA_DEFAULT_SCOPE}
+      STRAVA_WEBHOOK_VERIFY_TOKEN: ${STRAVA_WEBHOOK_VERIFY_TOKEN}
+
+      FITBIT_CLIENT_ID: ${FITBIT_CLIENT_ID}
+      FITBIT_CLIENT_SECRET: ${FITBIT_CLIENT_SECRET}
+      FITBIT_DEFAULT_SCOPE: ${FITBIT_DEFAULT_SCOPE}
+
+      ULTRAHUMAN_CLIENT_ID: ${ULTRAHUMAN_CLIENT_ID}
+      ULTRAHUMAN_CLIENT_SECRET: ${ULTRAHUMAN_CLIENT_SECRET}
+      ULTRAHUMAN_DEFAULT_SCOPE: ${ULTRAHUMAN_DEFAULT_SCOPE}
+
     ports:
       - "8000:8000"
     depends_on:
@@ -44,11 +124,9 @@ services:
     image: open-wearables-platform:latest
     pull_policy: never
     command: scripts/start/worker.sh
-    env_file:
-      - ./backend/config/.env
     environment:
-      - DB_HOST=db
-      - REDIS_HOST=redis
+      DB_HOST: ${DB_HOST}
+      REDIS_HOST: ${REDIS_HOST}
     depends_on:
       - redis
       - db
@@ -60,11 +138,9 @@ services:
     image: open-wearables-platform:latest
     pull_policy: never
     command: scripts/start/beat.sh
-    env_file:
-      - ./backend/config/.env
     environment:
-      - DB_HOST=db
-      - REDIS_HOST=redis
+      DB_HOST: ${DB_HOST}
+      REDIS_HOST: ${REDIS_HOST}
     depends_on:
       - redis
       - db
@@ -76,11 +152,9 @@ services:
     image: open-wearables-platform:latest
     pull_policy: never
     command: scripts/start/flower.sh
-    env_file:
-      - ./backend/config/.env
     environment:
-      - DB_HOST=db
-      - REDIS_HOST=redis
+      DB_HOST: ${DB_HOST}
+      REDIS_HOST: ${REDIS_HOST}
     ports:
       - 5555:5555
     depends_on:
@@ -110,13 +184,12 @@ services:
         exec svix-server "$$@"
       - --
     command: ["--run-migrations"]
-    env_file:
-      - ./backend/config/.env
     environment:
-      SVIX_DB_DSN: "postgresql://${DB_USER:-open-wearables}:${DB_PASSWORD:-open-wearables}@${DB_HOST:-db}:${DB_PORT:-5432}/svix"
-      SVIX_QUEUE_TYPE: "redis"
-      SVIX_REDIS_DSN: "redis://redis:6379/1"
-      SVIX_CACHE_TYPE: "redis"
+      SVIX_DB_DSN: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      SVIX_QUEUE_TYPE: redis
+      SVIX_REDIS_DSN: redis://redis:6379/1
+      SVIX_CACHE_TYPE: redis
+      SECRET_KEY: ${SECRET_KEY}
     expose:
       - "8071"
     depends_on:
@@ -139,7 +212,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: ${VITE_API_URL:?Set VITE_API_URL in your environment}
+        VITE_API_URL: ${VITE_API_URL}
     container_name: frontend__open-wearables
     image: open-wearables-frontend:latest
     pull_policy: never
