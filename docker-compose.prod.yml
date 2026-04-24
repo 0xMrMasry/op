@@ -127,6 +127,11 @@ services:
     environment:
       DB_HOST: ${DB_HOST}
       REDIS_HOST: ${REDIS_HOST}
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DB: ${REDIS_DB}
+      SECRET_KEY: ${SECRET_KEY}
+
+
     depends_on:
       - redis
       - db
